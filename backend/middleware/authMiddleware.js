@@ -12,7 +12,6 @@ const checkAuth = (req, res, next) => {
   }
   try {
     const decodedInfo = jwt.verify(token, secretKey);
-    console.log("decode", decodedInfo);
     console.log("decodedInfo", decodedInfo);
     req.user = decodedInfo.id;
     next();
