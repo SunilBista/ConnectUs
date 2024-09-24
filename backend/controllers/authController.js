@@ -30,7 +30,8 @@ const userLogin = async (req, res) => {
     const validUser = await bcrypt.compare(password, user.password);
     if (validUser) {
       const token = createWebToken(user._id);
-      res.cookie("token", token, { httpOnly: true, maxAge: maxAge * 1000 });
+      //change httpOnly to true later
+      res.cookie("token", token, { maxAge: maxAge * 1000 });
       res
         .status(201)
         .json({ token, user: { email: user.email, timeZone: user.timeZone } });
@@ -69,4 +70,20 @@ const userSignup = async (req, res) => {
   }
 };
 
-module.exports = { userLogin, userSignup };
+const getUser = async (req, res) => {
+  try {
+    console.log("req", req.user);
+    const user = await User.findById(req.user);
+
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+    const { password, ...userData } = user._doc;
+    res.json(userData);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Server error" });
+  }
+};
+
+module.exports = { userLogin, userSignup, getUser };
