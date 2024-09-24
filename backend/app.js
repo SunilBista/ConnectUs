@@ -17,7 +17,13 @@ dbConnect()
     console.log("Failed to connect to database", error);
   });
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Allow only your frontend
+    methods: ["GET", "POST", "PUT", "DELETE"], // Specify allowed methods
+    credentials: true, // Allow credentials (if needed)
+  })
+);
 app.use(cookieParser());
 app.use(express.json());
 app.use("/api/auth", authRoute);
