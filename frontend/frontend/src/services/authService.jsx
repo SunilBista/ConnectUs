@@ -21,12 +21,13 @@ const login = async (email, password) => {
   }
 };
 
-const signup = async (email, password, timezone) => {
+const signup = async (username, email, password, timezone) => {
   try {
     const res = await makeAPICall({
-      methof: "POST",
+      method: "POST",
       endpoint: "/api/auth/signup",
       payload: {
+        username,
         email,
         password,
         timezone,
