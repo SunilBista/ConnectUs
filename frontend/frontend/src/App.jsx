@@ -9,6 +9,7 @@ import Login from "./components/Authentication/Login";
 import Dashboard from "./components/Dashboard/Dashboard";
 import { AuthProvider } from "./context/Auth";
 import ProtectedRoute from "./components/authentication/ProtectedRoute";
+import SignUp from "./components/Authentication/Signup";
 
 const App = () => {
   return (
@@ -16,6 +17,7 @@ const App = () => {
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
           <Route
             path="/dashboard"
             element={

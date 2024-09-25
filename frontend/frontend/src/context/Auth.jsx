@@ -14,7 +14,7 @@ const AuthProvider = ({ children }) => {
     async function fetchData() {
       try {
         const userResponse = await getUser();
-        setUser(userResponse?._id);
+        setUser(userResponse?.data?._id);
       } catch (error) {
         console.error("Invalid token", error);
         setUser(null);
