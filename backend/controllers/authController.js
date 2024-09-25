@@ -1,7 +1,9 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
-const secretKey = process.env.JWT_SECRET;
 const bcrypt = require("bcrypt");
+const responseService = require("../service/responseService");
+
+const secretKey = process.env.JWT_SECRET;
 const maxAge = 3 * 24 * 60 * 60;
 
 const handleErrors = (err) => {
@@ -25,48 +27,82 @@ const createWebToken = (id) => {
 
 const userLogin = async (req, res) => {
   const { email, password } = req.body || {};
-  const user = await User.findOne({ email });
-  if (user) {
-    const validUser = await bcrypt.compare(password, user.password);
-    if (validUser) {
-      const token = createWebToken(user._id);
-      //change httpOnly to true later
-      res.cookie("token", token, { maxAge: maxAge * 1000 });
-      res
-        .status(201)
-        .json({ token, user: { email: user.email, timeZone: user.timeZone } });
+  try {
+    const user = await User.findOne({ email });
+    if (user) {
+      const validUser = await bcrypt.compare(password, user.password);
+      if (validUser) {
+        const token = createWebToken(user._id);
+        //change httpOnly to true later
+        res.cookie("token", token, { maxAge: maxAge * 1000 });
+        return res.status(200).json(
+          responseService.success(
+            "Login successful",
+            {
+              token,
+              user: {
+                email: user.email,
+                timezone: user.timezone,
+                username: user.username,
+              },
+            },
+            responseService.statusCodes.ok
+          )
+        );
+      } else {
+        return res
+          .status(400)
+          .json(responseService.error("The password is incorrect"));
+      }
     } else {
       return res
         .status(400)
-        .json({ error_message: "The password is incorrect" });
+        .json(responseService.error("The email does not exist"));
     }
-  } else {
-    return res.status(400).json({ error_message: "The email does not exist." });
+  } catch (err) {
+    res
+      .status(500)
+      .json(responseService.internalServerError("Server error", err));
   }
 };
 
 const userSignup = async (req, res) => {
-  const { email, password, timezone } = req.body;
+  const { username, email, password, timezone } = req.body;
+  console.log("res", req.body);
   try {
     let user = await User.findOne({ email });
     if (user) {
       return res
-        .status(400)
-        .json({ error_message: "Duplicate Email. User already exists" });
+        .status(409)
+        .json(
+          responseService.conflictError("Duplicate Email. User already exists")
+        );
     }
     user = await User.create({
+      username,
       email,
       password,
       timezone,
     });
     const token = createWebToken(user._id);
     res.cookie("token", token, { httpOnly: true, maxAge: maxAge * 1000 });
-    res
-      .status(201)
-      .json({ token, user: { email: user.email, timeZone: user.timeZone } });
+    res.status(201).json(
+      responseService.success(
+        "User created successfully",
+        {
+          token,
+          user: {
+            email: user.email,
+            timezone: user.timezone,
+            username: user.username,
+          },
+        },
+        responseService.statusCodes.created
+      )
+    );
   } catch (err) {
     const errors = handleErrors(err);
-    res.status(400).json({ errors });
+    res.status(400).json(responseService.error("Signup failed", errors));
   }
 };
 
@@ -76,13 +112,18 @@ const getUser = async (req, res) => {
     const user = await User.findById(req.user);
 
     if (!user) {
-      return res.status(404).json({ msg: "User not found" });
+      return res
+        .status(404)
+        .json(responseService.notFoundError("User not found"));
     }
     const { password, ...userData } = user._doc;
-    res.json(userData);
+    res
+      .status(200)
+      .json(responseService.success("User data retrieved", userData));
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ msg: "Server error" });
+    res
+      .status(500)
+      .json(responseService.internalServerError("Server error", err));
   }
 };
 
