@@ -68,7 +68,6 @@ const userLogin = async (req, res) => {
 
 const userSignup = async (req, res) => {
   const { username, email, password, timezone } = req.body;
-  console.log("res", req.body);
   try {
     let user = await User.findOne({ email });
     if (user) {
@@ -106,9 +105,29 @@ const userSignup = async (req, res) => {
   }
 };
 
+const userLogout = (req, res) => {
+  try {
+    res.cookie("token", "", { maxAge: 1 });
+    return res
+      .status(200)
+      .json(
+        responseService.success(
+          "Logout successful",
+          null,
+          responseService.statusCodes.ok
+        )
+      );
+  } catch (err) {
+    return res
+      .status(500)
+      .json(
+        responseService.internalServerError("Server error during logout", err)
+      );
+  }
+};
+
 const getUser = async (req, res) => {
   try {
-    console.log("req", req.user);
     const user = await User.findById(req.user);
 
     if (!user) {
@@ -127,4 +146,4 @@ const getUser = async (req, res) => {
   }
 };
 
-module.exports = { userLogin, userSignup, getUser };
+module.exports = { userLogin, userSignup, getUser, userLogout };
