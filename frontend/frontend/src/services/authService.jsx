@@ -11,7 +11,6 @@ const login = async (email, password) => {
       },
       contentType: "application/json",
     });
-    console.log(res);
     // if (res.data.token) {
     //   localStorage.setItem("token", res.data.token);
     // }
@@ -49,15 +48,22 @@ const getUser = async () => {
       method: "GET",
       endpoint: "/api/auth/user",
     });
-    console.log(res);
     return res;
   } catch (err) {
     throw err;
   }
 };
 
-const logout = () => {
-  localStorage.removeItem("token");
+const logout = async () => {
+  try {
+    const res = await makeAPICall({
+      method: "GET",
+      endpoint: "/api/auth/logout",
+    });
+    return res;
+  } catch (err) {
+    throw err;
+  }
 };
 
 export { login, signup, logout, getUser };
