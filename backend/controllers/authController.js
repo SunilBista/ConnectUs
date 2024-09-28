@@ -2,6 +2,7 @@ const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const responseService = require("../service/responseService");
+const Organization = require("../models/Organization");
 
 const secretKey = process.env.JWT_SECRET;
 const maxAge = 3 * 24 * 60 * 60;
@@ -67,7 +68,8 @@ const userLogin = async (req, res) => {
 };
 
 const userSignup = async (req, res) => {
-  const { username, email, password, timezone } = req.body;
+  const { username, email, password, timezone, organization, isCreatingOrg } =
+    req.body;
   try {
     let user = await User.findOne({ email });
     if (user) {
@@ -77,12 +79,31 @@ const userSignup = async (req, res) => {
           responseService.conflictError("Duplicate Email. User already exists")
         );
     }
+    let org;
+    if (isCreatingOrg) {
+      org = new Organization({ name: organization });
+      await org.save;
+    } else {
+      const sanitizedOrgName = organization.trim().toLowerCase();
+      org = await Organization.findOne({
+        name: { $regex: new RegExp(`^${sanitizedOrgName}$`, "i") },
+      });
+      console.log("org", org);
+      if (!org) {
+        return res
+          .status(400)
+          .json(responseService.error("Organization not found"));
+      }
+    }
     user = await User.create({
       username,
       email,
       password,
       timezone,
+      organization: org._id,
     });
+    org.members.push(user._id);
+    await org.save();
     const token = createWebToken(user._id);
     res.cookie("token", token, { httpOnly: true, maxAge: maxAge * 1000 });
     res.status(201).json(
@@ -94,6 +115,7 @@ const userSignup = async (req, res) => {
             email: user.email,
             timezone: user.timezone,
             username: user.username,
+            organization: user.organization,
           },
         },
         responseService.statusCodes.created

@@ -3,6 +3,7 @@ const app = express();
 const dbConnect = require("./config/dbConnect");
 const cookieParser = require("cookie-parser");
 const authRoute = require("./routes/authRoute");
+const orgRoute = require("./routes/orgRoutes");
 const cors = require("cors");
 require("dotenv").config();
 
@@ -27,6 +28,7 @@ app.use(
 app.use(cookieParser());
 app.use(express.json());
 app.use("/api/auth", authRoute);
+app.use("/api", orgRoute);
 
 app.get("/", (req, res) => {
   res.send("home");

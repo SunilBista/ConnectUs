@@ -23,6 +23,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  organization: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "organization",
+    required: true,
+  },
 });
 
 //fire a function before new data save to DB - hashing password
