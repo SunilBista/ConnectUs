@@ -11,10 +11,16 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        "primary-bg-color": "#EDE8DC",
+        "primary-bg-color": "#A3DABF",
         "secondary-bg-color": "#F8F6F1",
 
-        "primary-text-color": "#4A4A4A",
+        "sidebar-bg-color": "#286F78",
+
+        "icon-color": "#F3F3F3",
+        "icon-hover-color": "#FF857F",
+        "icon-active-color": "#2C3E50",
+
+        "primary-text-color": "#1A242F",
         "secondary-text-color": "#7D7D7D",
         "muted-text-color": "#A89C8A",
         "error-text-color": "#8B3B3B",
