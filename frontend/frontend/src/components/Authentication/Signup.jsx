@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { signup, getUser } from "../../services/authService";
 import { AuthContext } from "../../context/Auth";
 import Button, { COLOR_SCHEME, VARIANT } from "../../widgets/Button/Button";
-
+import moment from "moment-timezone";
 const SignUp = () => {
   const { user, setUser, loading } = useContext(AuthContext);
   const [username, setUsername] = useState("");
@@ -13,7 +13,9 @@ const SignUp = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-
+  const [organization, setOrganization] = useState("");
+  const [isCreatingOrg, setIsCreatingOrg] = useState(false);
+  const timezones = moment.tz.names();
   useEffect(() => {
     if (user && !loading) {
       navigate("/dashboard");
@@ -25,10 +27,17 @@ const SignUp = () => {
     setIsLoading(true);
     setError("");
     try {
-      const response = await signup(username, email, password, timezone);
+      const response = await signup(
+        username,
+        email,
+        password,
+        timezone,
+        organization,
+        isCreatingOrg
+      );
 
       const userResponse = await getUser();
-      setUser(userResponse?.data?._id);
+      setUser(userResponse?.data);
 
       if (response?.data?.token) {
         navigate("/dashboard");
@@ -65,6 +74,10 @@ const SignUp = () => {
 
   const handleTimezoneChange = (e) => {
     setTimezone(e.target.value);
+    if (error) setError("");
+  };
+  const handleOrganizationChange = (e) => {
+    setOrganization(e.target.value);
     if (error) setError("");
   };
 
@@ -108,14 +121,50 @@ const SignUp = () => {
           onChange={handlePasswordChange}
           required
         />
-        <input
-          type="text"
-          placeholder="Timezone"
+
+        <select
           className="placeholder-input-placeholder-color border border-input-border-color  focus:outline-none focus:border-2 focus:border-focus-border-color  p-2 mb-4 w-full rounded text-sm md:text-base lg:text-lg"
           value={timezone}
           onChange={handleTimezoneChange}
           required
-        />
+        >
+          <option value="">Select Timezone</option>
+          {timezones.map((zone) => (
+            <option key={zone} value={zone}>
+              {zone}
+            </option>
+          ))}
+        </select>
+        <label className="mb-4 flex items-center text-primary-text-color text-sm md:text-base">
+          <input
+            type="checkbox"
+            checked={isCreatingOrg}
+            onChange={(e) => setIsCreatingOrg(e.target.checked)}
+            className="mr-2 w-3 h-3 md:w-4 md:h-4 text-primary-text-color text-sm md:text-base lg:text-lg"
+          />
+          Create a new organization
+        </label>
+
+        {isCreatingOrg ? (
+          <input
+            type="text"
+            placeholder="Organization Name"
+            className="placeholder-input-placeholder-color border border-input-border-color  focus:outline-none focus:border-2 focus:border-focus-border-color  p-2 mb-4 w-full rounded text-sm md:text-base lg:text-lg"
+            value={organization}
+            onChange={handleOrganizationChange}
+            required
+          />
+        ) : (
+          <input
+            type="text"
+            placeholder="Organization ID"
+            className="placeholder-input-placeholder-color border border-input-border-color  focus:outline-none focus:border-2 focus:border-focus-border-color  p-2 mb-4 w-full rounded text-sm md:text-base lg:text-lg"
+            value={organization}
+            onChange={handleOrganizationChange}
+            required
+          />
+        )}
+
         {error && (
           <div className="text-error-text-color text-center mb-4 text-sm md:text-base">
             {error}
