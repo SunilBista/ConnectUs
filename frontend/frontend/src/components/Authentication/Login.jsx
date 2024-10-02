@@ -25,7 +25,7 @@ const Login = () => {
     try {
       const response = await login(email, password);
       const userResponse = await getUser();
-      setUser(userResponse?.data?._id);
+      setUser(userResponse?.data);
       if (response?.data?.token) {
         navigate("/dashboard");
       }
