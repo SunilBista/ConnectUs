@@ -20,7 +20,14 @@ const login = async (email, password) => {
   }
 };
 
-const signup = async (username, email, password, timezone) => {
+const signup = async (
+  username,
+  email,
+  password,
+  timezone,
+  organization,
+  isCreatingOrg
+) => {
   try {
     const res = await makeAPICall({
       method: "POST",
@@ -30,6 +37,8 @@ const signup = async (username, email, password, timezone) => {
         email,
         password,
         timezone,
+        organization,
+        isCreatingOrg,
       },
       contentType: "application/json",
     });
